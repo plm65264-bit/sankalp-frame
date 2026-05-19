@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sankalp 2026 – Conference Frame</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --crimson: #8B0000;
+    --gold: #C9A84C;
+    --gold-light: #F0D080;
+    --cream: #FFF8E7;
+    --dark: #1a0a00;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #1a0505;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    color: #fff;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    color: var(--gold-light);
+    text-align: center;
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.02em;
+  }
+  .subtitle {
+    font-size: 0.85rem;
+    color: #c9a84c99;
+    text-align: center;
+    margin-bottom: 2rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .layout {
+    display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  /* ── LEFT: Controls ── */
+  .controls {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 16px;
+    padding: 1.75rem;
+    width: 340px;
+    flex-shrink: 0;
+  }
+
+  .field-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(201,168,76,0.35);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 1.25rem;
+  }
+  input[type="text"]:focus { border-color: var(--gold); }
+  input[type="text"]::placeholder { color: rgba(255,255,255,0.3); }
+
+  .upload-zone {
+    border: 2px dashed rgba(201,168,76,0.4);
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 1.25rem;
+    position: relative;
+  }
+  .upload-zone:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-zone .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .upload-zone p { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+  .upload-zone p strong { color: var(--gold-light); }
+
+  /* Crop modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #1e0b00;
+    border: 1px solid var(--gold);
+    border-radius: 16px;
+    padding: 1.5rem;
+    max-width: 480px;
+    width: 95%;
+  }
+  .modal h3 { color: var(--gold-light); margin-bottom: 1rem; font-size: 1rem; }
+  .crop-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #000;
+    cursor: crosshair;
+    user-select: none;
+  }
+  .crop-wrapper img { position: absolute; display: block; }
+  .crop-overlay {
+    position: absolute; inset: 0;
+    pointer-events: none;
+  }
+  .crop-box {
+    position: absolute;
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+  }
+  .modal-btns { display: flex; gap: 0.75rem; margin-top: 1rem; }
+  .btn {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-gold { background: var(--gold); color: var(--dark); }
+  .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+  .btn:hover { opacity: 0.85; }
+
+  /* Zoom slider */
+  .zoom-row { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; }
+  .zoom-row label { font-size: 0.75rem; color: var(--gold); white-space: nowrap; }
+  .zoom-row input[type="range"] { flex: 1; accent-color: var(--gold); }
+
+  /* Download btn */
+  .btn-download {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #C9A84C, #8B6914);
+    color: #1a0a00;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    letter-spacing: 0.03em;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-download:hover { opacity: 0.9; }
+  .btn-download:active { transform: scale(0.98); }
+
+  /* ── RIGHT: Preview ── */
+  .preview-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .preview-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(201,168,76,0.6);
+  }
+
+  #previewCanvas {
+    border-radius: 12px;
+    border: 1px solid rgba(201,168,76,0.3);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    max-width: min(300px, 90vw);
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .tip {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    max-width: 300px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Sankalp 2026</h1>
+<p class="subtitle">National Conference of CA Students · Create Your Frame</p>
+
+<div class="layout">
+  <!-- Controls -->
+  <div class="controls">
+    <label class="field-label">Your Full Name</label>
+    <input type="text" id="nameInput" placeholder="e.g. Aryan Shah" maxlength="40" />
+
+    <label class="field-label">Your Photo</label>
+    <div class="upload-zone" id="dropZone">
+      <input type="file" id="photoInput" accept="image/*" />
+      <div class="icon">📷</div>
+      <p><strong>Click to upload</strong> or drag & drop</p>
+      <p>JPG, PNG, WEBP supported</p>
+    </div>
+
+    <div id="photoThumb" style="display:none; margin-bottom:1rem; text-align:center;">
+      <img id="thumbImg" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--gold);" />
+      <p style="font-size:0.75rem;color:var(--gold);margin-top:0.4rem;cursor:pointer;" onclick="document.getElementById('photoInput').click()">Change photo</p>
+    </div>
+
+    <button class="btn-download" onclick="downloadImage()">⬇ Download My Frame</button>
+  </div>
+
+  <!-- Preview -->
+  <div class="preview-wrap">
+    <p class="preview-label">Live Preview</p>
+    <canvas id="previewCanvas" width="450" height="800"></canvas>
+    <p class="tip">Preview updates automatically as you fill in your details.</p>
+  </div>
+</div>
+
+<!-- Crop Modal -->
+<div class="modal-overlay" id="cropModal">
+  <div class="modal">
+    <h3>✂ Crop Your Photo</h3>
+    <div class="crop-wrapper" id="cropWrapper">
+      <img id="cropImg" />
+      <div class="crop-overlay">
+        <div class="crop-box" id="cropBox"></div>
+      </div>
+    </div>
+    <div class="zoom-row">
+      <label>Zoom</label>
+      <input type="range" id="zoomSlider" min="100" max="300" value="100" />
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="cancelCrop()">Cancel</button>
+      <button class="btn btn-gold" onclick="applyCrop()">Apply Crop</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Poster geometry (in canvas coordinates matching 900×1600 poster) ──
+// Canvas: 450×800 (half of original for performance)
+// Photo white box: approx x=195-695, y=595-1045 on 900×1600 → scaled to 450×800
+// Scaled: x=97, y=297, w=250, h=225
+const PHOTO_X = 97, PHOTO_Y = 297, PHOTO_W = 250, PHOTO_H = 225;
+// Name banner centred below photo box
+const NAME_X = 222, NAME_Y = 548, NAME_MAX_W = 230;
+
+let posterImg = null;
+let croppedPhotoCanvas = null;
+let rawFile = null;
+let cropImgEl = document.getElementById('cropImg');
+let cropWrap = document.getElementById('cropWrapper');
+let cropBox = document.getElementById('cropBox');
+let zoomSlider = document.getElementById('zoomSlider');
+
+// ── Load poster ──
+function loadPoster() {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  // Embed the poster as a data URL below OR load from same origin.
+  // We'll load from the user-provided image path via a file input trick,
+  // but since the poster is a static asset, we embed it from the uploaded file.
+  img.onload = () => { posterImg = img; drawPreview(); };
+  // Load from /mnt/user-data/uploads/ — the server serves it
+  img.src = 'IMG-20260519-WA0003.jpg';
+  img.onerror = () => {
+    // fallback: draw placeholder poster
+    posterImg = null;
+    drawPreview();
+  };
+}
+
+// ── Draw preview ──
+function drawPreview() {
+  const canvas = document.getElementById('previewCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (posterImg) {
+    ctx.drawImage(posterImg, 0, 0, canvas.width, canvas.height);
+  } else {
+    // placeholder gradient
+    const grd = ctx.createLinearGradient(0,0,0,canvas.height);
+    grd.addColorStop(0,'#5a0000'); grd.addColorStop(1,'#1a0000');
+    ctx.fillStyle = grd; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='rgba(201,168,76,0.15)'; ctx.fillRect(PHOTO_X,PHOTO_Y,PHOTO_W,PHOTO_H);
+    ctx.strokeStyle='#C9A84C'; ctx.lineWidth=2;
+    ctx.strokeRect(PHOTO_X,PHOTO_Y,PHOTO_W,PHOTO_H);
+    ctx.fillStyle='rgba(255,248,231,0.9)'; ctx.fillRect(130,660,340,48);
+    ctx.fillStyle='#8B0000'; ctx.font='bold 14px DM Sans,sans-serif';
+    ctx.textAlign='center'; ctx.fillText('Poster preview — place poster file in same folder',300,690);
+  }
+
+  // Draw user photo
+  if (croppedPhotoCanvas) {
+    ctx.save();
+    roundRect(ctx, PHOTO_X, PHOTO_Y, PHOTO_W, PHOTO_H, 10);
+    ctx.clip();
+    ctx.drawImage(croppedPhotoCanvas, PHOTO_X, PHOTO_Y, PHOTO_W, PHOTO_H);
+    ctx.restore();
+  }
+
+  // Draw name
+  const name = document.getElementById('nameInput').value.trim();
+  if (name) {
+    ctx.save();
+    // Draw into name banner area
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    // auto-fit font size
+    let fontSize = 22;
+    ctx.font = `bold ${fontSize}px 'Playfair Display', serif`;
+    while (ctx.measureText(name).width > NAME_MAX_W && fontSize > 11) {
+      fontSize--;
+      ctx.font = `bold ${fontSize}px 'Playfair Display', serif`;
+    }
+    ctx.fillStyle = '#4a2000';
+    ctx.fillText(name, NAME_X, NAME_Y);
+    ctx.restore();
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+// ── Name live update ──
+document.getElementById('nameInput').addEventListener('input', drawPreview);
+
+// ── File input ──
+document.getElementById('photoInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  rawFile = file;
+  openCropModal(file);
+});
+
+// ── Crop Modal ──
+let cropState = { startX:0, startY:0, isDragging:false, offsetX:0, offsetY:0, zoom:1 };
+
+function openCropModal(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    cropImgEl.src = e.target.result;
+    cropImgEl.onload = () => initCrop();
+  };
+  reader.readAsDataURL(file);
+  document.getElementById('cropModal').classList.add('active');
+  zoomSlider.value = 100;
+}
+
+function initCrop() {
+  const ww = cropWrap.clientWidth;
+  const wh = cropWrap.clientHeight;
+  const nat = Math.min(ww, wh);
+  const size = nat * 0.75;
+  // Center crop box
+  const bx = (ww - size)/2, by = (wh - size)/2;
+  positionCropBox(bx, by, size);
+  fitImageToCropWrap();
+  cropState.offsetX = 0; cropState.offsetY = 0;
+}
+
+function fitImageToCropWrap() {
+  const ww = cropWrap.clientWidth;
+  const wh = cropWrap.clientHeight;
+  const zoom = parseInt(zoomSlider.value)/100;
+  const nat_w = cropImgEl.naturalWidth, nat_h = cropImgEl.naturalHeight;
+  const scale = Math.max(ww/nat_w, wh/nat_h) * zoom;
+  const iw = nat_w * scale, ih = nat_h * scale;
+  cropImgEl.style.width = iw+'px';
+  cropImgEl.style.height = ih+'px';
+  applyImgOffset();
+}
+
+function applyImgOffset() {
+  const ww = cropWrap.clientWidth, wh = cropWrap.clientHeight;
+  const iw = parseFloat(cropImgEl.style.width), ih = parseFloat(cropImgEl.style.height);
+  let x = cropState.offsetX + (ww - iw)/2;
+  let y = cropState.offsetY + (wh - ih)/2;
+  // clamp so image always covers the crop wrapper
+  x = Math.min(0, Math.max(ww-iw, x));
+  y = Math.min(0, Math.max(wh-ih, y));
+  cropImgEl.style.left = x+'px';
+  cropImgEl.style.top = y+'px';
+}
+
+function positionCropBox(x, y, size) {
+  cropBox.style.left = x+'px';
+  cropBox.style.top = y+'px';
+  cropBox.style.width = size+'px';
+  cropBox.style.height = size+'px';
+}
+
+// Drag image inside crop wrapper
+let drag = { active:false, lx:0, ly:0 };
+cropWrap.addEventListener('mousedown', e => { drag.active=true; drag.lx=e.clientX; drag.ly=e.clientY; e.preventDefault(); });
+cropWrap.addEventListener('touchstart', e => { drag.active=true; drag.lx=e.touches[0].clientX; drag.ly=e.touches[0].clientY; e.preventDefault(); }, {passive:false});
+window.addEventListener('mousemove', e => {
+  if (!drag.active) return;
+  cropState.offsetX += e.clientX - drag.lx; cropState.offsetY += e.clientY - drag.ly;
+  drag.lx=e.clientX; drag.ly=e.clientY;
+  applyImgOffset();
+});
+window.addEventListener('touchmove', e => {
+  if (!drag.active) return;
+  cropState.offsetX += e.touches[0].clientX - drag.lx; cropState.offsetY += e.touches[0].clientY - drag.ly;
+  drag.lx=e.touches[0].clientX; drag.ly=e.touches[0].clientY;
+  applyImgOffset();
+}, {passive:false});
+window.addEventListener('mouseup', ()=>drag.active=false);
+window.addEventListener('touchend', ()=>drag.active=false);
+
+zoomSlider.addEventListener('input', fitImageToCropWrap);
+
+function applyCrop() {
+  // Determine what region of the original image is visible inside the crop box
+  const ww = cropWrap.clientWidth, wh = cropWrap.clientHeight;
+  const boxRect = cropBox.getBoundingClientRect();
+  const wrapRect = cropWrap.getBoundingClientRect();
+  const boxX = boxRect.left - wrapRect.left;
+  const boxY = boxRect.top - wrapRect.top;
+  const boxW = boxRect.width;
+  const boxH = boxRect.height;
+
+  const imgX = parseFloat(cropImgEl.style.left) || (ww - parseFloat(cropImgEl.style.width))/2;
+  const imgY = parseFloat(cropImgEl.style.top) || (wh - parseFloat(cropImgEl.style.height))/2;
+  const imgW = parseFloat(cropImgEl.style.width);
+  const imgH = parseFloat(cropImgEl.style.height);
+
+  // Source pixel coords on the original image
+  const scaleX = cropImgEl.naturalWidth / imgW;
+  const scaleY = cropImgEl.naturalHeight / imgH;
+  const srcX = (boxX - imgX) * scaleX;
+  const srcY = (boxY - imgY) * scaleY;
+  const srcW = boxW * scaleX;
+  const srcH = boxH * scaleY;
+
+  // Draw cropped to a square canvas matching PHOTO_W × PHOTO_H
+  const c = document.createElement('canvas');
+  c.width = PHOTO_W; c.height = PHOTO_H;
+  const cx = c.getContext('2d');
+  cx.drawImage(cropImgEl, srcX, srcY, srcW, srcH, 0, 0, PHOTO_W, PHOTO_H);
+  croppedPhotoCanvas = c;
+
+  // Show thumbnail
+  document.getElementById('thumbImg').src = c.toDataURL();
+  document.getElementById('photoThumb').style.display = 'block';
+  document.getElementById('dropZone').style.display = 'none';
+
+  document.getElementById('cropModal').classList.remove('active');
+  drawPreview();
+}
+
+function cancelCrop() {
+  document.getElementById('cropModal').classList.remove('active');
+}
+
+// ── Download (full resolution 900×1600) ──
+function downloadImage() {
+  const name = document.getElementById('nameInput').value.trim() || 'sankalp_frame';
+  const hiCanvas = document.createElement('canvas');
+  hiCanvas.width = 900; hiCanvas.height = 1600;
+  const ctx = hiCanvas.getContext('2d');
+
+  // Scale factor from preview canvas to full res
+  const sx = 900/450, sy = 1600/800;
+
+  if (posterImg) {
+    ctx.drawImage(posterImg, 0, 0, 900, 1600);
+  }
+
+  if (croppedPhotoCanvas) {
+    ctx.save();
+    roundRect(ctx, PHOTO_X*sx, PHOTO_Y*sy, PHOTO_W*sx, PHOTO_H*sy, 20);
+    ctx.clip();
+    ctx.drawImage(croppedPhotoCanvas, PHOTO_X*sx, PHOTO_Y*sy, PHOTO_W*sx, PHOTO_H*sy);
+    ctx.restore();
+  }
+
+  const uname = document.getElementById('nameInput').value.trim();
+  if (uname) {
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    let fontSize = 44;
+    ctx.font = `bold ${fontSize}px 'Playfair Display', serif`;
+    while (ctx.measureText(uname).width > NAME_MAX_W*sx && fontSize > 22) {
+      fontSize--;
+      ctx.font = `bold ${fontSize}px 'Playfair Display', serif`;
+    }
+    ctx.fillStyle = '#4a2000';
+    ctx.fillText(uname, NAME_X*sx, NAME_Y*sy);
+    ctx.restore();
+  }
+
+  const link = document.createElement('a');
+  link.download = name.replace(/\s+/g,'_') + '_sankalp2026.jpg';
+  hiCanvas.toBlob(blob => {
+    link.href = URL.createObjectURL(blob);
+    link.click();
+  }, 'image/jpeg', 0.96);
+}
+
+// ── Init ──
+loadPoster();
+// Re-draw when font loaded
+document.fonts.ready.then(drawPreview);
+</script>
+</body>
+</html>
